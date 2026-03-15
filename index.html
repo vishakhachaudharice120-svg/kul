@@ -1,0 +1,378 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Clan & Surname Finder</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #f5f7fb;
+      --panel: #ffffff;
+      --border: #e3e8ef;
+      --text: #0f172a;
+      --muted: #5b6474;
+      --accent: #2563eb;
+      --accent-2: #14b8a6;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Manrope", "Segoe UI", sans-serif;
+      background: radial-gradient(circle at 80% 10%, rgba(37, 99, 235, 0.08), transparent 35%),
+                  radial-gradient(circle at 10% 20%, rgba(20, 184, 166, 0.08), transparent 35%),
+                  var(--bg);
+      color: var(--text);
+      padding: 32px 18px 48px;
+    }
+
+    .shell {
+      max-width: 1080px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    h1 {
+      margin: 0 0 6px;
+      font-size: 30px;
+      letter-spacing: -0.02em;
+    }
+
+    p.lead {
+      margin: 0;
+      color: var(--muted);
+      max-width: 720px;
+    }
+
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 18px 20px 22px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
+    }
+
+    label { display: block; font-weight: 700; margin-bottom: 10px; }
+
+    .input-row {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    input[type="text"] {
+      flex: 1;
+      padding: 12px 14px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: #f8fafc;
+      color: var(--text);
+      font-size: 15px;
+      outline: none;
+      transition: border-color 140ms ease, box-shadow 140ms ease;
+    }
+
+    input[type="text"]:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.18);
+      background: #fff;
+    }
+
+    .suggestions {
+      margin-top: 12px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 10px;
+    }
+
+    .pill {
+      padding: 11px 12px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: #f8fafc;
+      cursor: pointer;
+      transition: transform 120ms ease, border-color 120ms ease, background 120ms ease;
+      text-align: center;
+      font-weight: 700;
+    }
+
+    .pill:hover {
+      transform: translateY(-1px);
+      border-color: var(--accent);
+      background: #edf2ff;
+    }
+
+    .pill.is-active {
+      border-color: var(--accent);
+      background: #dbeafe;
+    }
+
+    .meta {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+      margin-top: 14px;
+    }
+
+    .meta-item {
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px 14px;
+      background: #f8fafc;
+    }
+
+    .meta-item strong { display: block; margin-bottom: 6px; color: var(--accent); }
+
+    .surnames {
+      margin-top: 12px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .chip {
+      padding: 9px 12px;
+      border-radius: 18px;
+      border: 1px solid var(--border);
+      background: #f8fafc;
+      cursor: pointer;
+      transition: border-color 120ms ease, background 120ms ease, color 120ms ease;
+      font-weight: 700;
+      font-size: 14px;
+    }
+
+    .chip:hover {
+      border-color: var(--accent);
+      background: #edf2ff;
+    }
+
+    .chip.is-active {
+      border-color: var(--accent);
+      background: #2563eb;
+      color: #fff;
+    }
+
+    .empty { color: var(--muted); margin-top: 8px; }
+
+    @media (max-width: 640px) {
+      .input-row { flex-direction: column; align-items: stretch; }
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <script type="text/babel">
+    const { useMemo, useState } = React;
+
+    // Embed data.json so it works even when opened directly from the filesystem.
+    const embeddedData = [
+      {
+        "Serial Number": "१.",
+        "Clan Name": "अहिरराव",
+        "Lineage": "सूर्य",
+        "Gotra": "भारद्वाज",
+        "Clan Deity": "जेजुरीचा खंडोबा",
+        "Clan Goddess": "श्री तुळजाभवानी माता, तुळजापूर",
+        "Totem": "पंचपल्लव",
+        "Surnames": [
+          "अंकटक", "अकराळ", "अक्रील", "अमीर", "आमले", "आरज", "आटोळे", "अकांते", "अडाऊ", "अवघड",
+          "अरमाले", "आखर", "आखरे", "आदन", "इंधाते", "इरवे", "एकवे", "एदे", "एखंडे", "ऐराव",
+          "कथले", "करनाळे", "गंगाळे", "गुबरे", "घोमे", "घोडचढे", "घोकेल", "चन्हाटे", "चरणे",
+          "चेरणे", "जगजेठे", "जगडंबरे", "जगडांबरे", "जगभांडे", "जंगले", "जुनघरे", "जुनडे",
+          "जुव्यारे", "झाडोकार", "टाले", "टोले", "डवरे", "डबरे", "डुतुरे", "डोमणे", "ढाकणे",
+          "दाते", "पडवे", "पडपठे", "पडोळे", "पत्रासे", "बळी", "बळिये", "भिलकर", "भुसगाले",
+          "मुलमुले", "शिरे", "शिनगारे", "हाईपकर", "प्रोकतट", "प्रतिहार", "रसाल", "देरे",
+          "शैलधार", "इसरडगे", "ढोले", "वाडगरे"
+        ]
+      },
+      {
+        "Serial Number": "२.",
+        "Clan Name": "आंग्र",
+        "Lineage": "चंद्र",
+        "Gotra": "गार्ग्य",
+        "Clan Deity": "जेजुरीचा खंडोबा",
+        "Clan Goddess": "श्री तुळजाभवानी माता, तुळजापूर",
+        "Totem": "पंचपल्लव",
+        "Surnames": [
+          "अखत्यार", "अखिल", "अमनकार", "अवकाळी", "आतंकड", "आटकर", "आरसुड", "आसूड", "आखाड",
+          "अंधारे", "आंधक", "इरखडे", "इसनकार", "इटकरे", "इथाळे", "कंकराळे", "करांडे", "करानळे",
+          "कडाळे", "गडगर्व", "गंधर्व", "घोडतले", "चंचल", "चटपटे", "चाबुकस्वार", "चटप", "जंजाळ",
+          "जवजाळ", "जंजीरे", "जटाधारी", "जघने", "जढे", "जंघाळे", "जटाभारे", "टिपरे", "लढे",
+          "तुषार", "त्रिदोषी", "बटाणे", "सबकाळ", "सवकाळे", "सवाई", "सदार", "सरदार", "तुमाने"
+        ]
+      },
+      {
+        "Serial Number": "३.",
+        "Clan Name": "आंगण",
+        "Lineage": "चंद्र",
+        "Gotra": "दुर्वास",
+        "Clan Deity": "जेजुरीचा खंडोबा",
+        "Clan Goddess": "श्री तुळजाभवानी माता, तुळजापूर",
+        "Totem": "सोने, हलद, केतकी, कळंब",
+        "Surnames": [
+          "अंगण", "आंगणे", "अळसपुरे", "अबोले", "अडशुळ", "अस्वले", "आक्ते", "आगरकार", "अंगराखे",
+          "उगल", "उधडे", "उत्तम", "उत्पादक", "उरनाळे", "उपरे", "उरणे", "उठाळ", "उधवे",
+          "कनोझ", "कराळे", "कलानं", "किनंगे", "गऊरखेड़े", "गांधी", "गुलाब", "घोलप", "चट्टे",
+          "चाघे", "छत्तीस", "छाकटे", "छिचोरे", "छोटे", "जघने", "जंघाळे", "जढे", "जंघे",
+          "जगदाळे", "जनचोरे", "जडनावळे", "तहानें", "तळवट", "तळघाटे", "पावलें", "बुजबुजे",
+          "बुध", "बुधे", "मेहकरें", "रणधीर", "रणजीत", "लहाने", "वळ्हे", "शिंगे", "सावरकार",
+          "सालवे", "हिरवे"
+        ]
+      }
+    ];
+
+    const charMap = {
+      "अ": "a", "आ": "aa", "इ": "i", "ई": "ee", "उ": "u", "ऊ": "oo",
+      "ए": "e", "ऐ": "ai", "ओ": "o", "औ": "au", "ऋ": "ri", "ॠ": "rri", "ं": "n", "ः": "h",
+      "क": "k", "ख": "kh", "ग": "g", "घ": "gh", "ङ": "n",
+      "च": "ch", "छ": "chh", "ज": "j", "झ": "jh", "ञ": "ny",
+      "ट": "t", "ठ": "th", "ड": "d", "ढ": "dh", "ण": "n",
+      "त": "t", "थ": "th", "द": "d", "ध": "dh", "न": "n",
+      "प": "p", "फ": "ph", "ब": "b", "भ": "bh", "म": "m",
+      "य": "y", "र": "r", "ल": "l", "व": "v",
+      "श": "sh", "ष": "sh", "स": "s", "ह": "h",
+      "ळ": "l", "क्ष": "ksh", "ज्ञ": "gy", "ज़": "z", "फ़": "f", "क़": "q"
+    };
+
+    const transliterate = (text = "") =>
+      Array.from(text)
+        .map((ch) => charMap[ch] ?? ch)
+        .join("")
+        .toLowerCase();
+
+    const useSorted = (arr) => useMemo(() => [...arr].sort((a, b) => a.localeCompare(b)), [arr]);
+
+    function App() {
+      const [clanQuery, setClanQuery] = useState("");
+      const [selectedClan, setSelectedClan] = useState(null);
+      const [selectedSurname, setSelectedSurname] = useState("");
+
+      const clanMatches = useMemo(() => {
+        const q = clanQuery.trim().toLowerCase();
+        if (!q) return [];
+        return embeddedData.filter((item) => {
+          const native = (item["Clan Name"] || "").toLowerCase();
+          const latin = transliterate(item["Clan Name"]);
+          return native.startsWith(q) || latin.startsWith(q);
+        });
+      }, [clanQuery]);
+
+      const surnames = useSorted(selectedClan?.Surnames || []);
+
+      const handleClanSelect = (clan) => {
+        setSelectedClan(clan);
+        setSelectedSurname("");
+      };
+
+      const handleSurnameSelect = (surname) => setSelectedSurname(surname);
+
+      return (
+        <div className="shell">
+          <header>
+            <h1>Clan &amp; Surname Finder</h1>
+            <p className="lead">Type the first letter in English or Marathi; pick a clan, then explore surnames and full details.</p>
+          </header>
+
+          <div className="card">
+            <label htmlFor="clan-input">Search by clan</label>
+            <div className="input-row">
+              <input
+                id="clan-input"
+                type="text"
+                placeholder="e.g. a"
+                value={clanQuery}
+                onChange={(e) => setClanQuery(e.target.value)}
+              />
+            </div>
+            {clanQuery && (
+              <div className="suggestions">
+                {clanMatches.length === 0 && <div className="empty">No clans match that prefix.</div>}
+                {clanMatches.map((item) => (
+                  <div
+                    key={item["Serial Number"]}
+                    className={`pill ${selectedClan?.["Serial Number"] === item["Serial Number"] ? "is-active" : ""}`}
+                    onClick={() => handleClanSelect(item)}
+                    role="button"
+                  >
+                    {item["Clan Name"]}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {selectedClan && (
+            <div className="card">
+              <strong>Surnames in {selectedClan["Clan Name"]}</strong>
+              <div className="surnames">
+                {surnames.map((name) => (
+                  <div
+                    key={name}
+                    className={`chip ${selectedSurname === name ? "is-active" : ""}`}
+                    onClick={() => handleSurnameSelect(name)}
+                    role="button"
+                  >
+                    {name}
+                  </div>
+                ))}
+              </div>
+              {surnames.length === 0 && <div className="empty">No surnames listed for this clan.</div>}
+              {!selectedSurname && <div className="empty">Pick a surname to see clan details.</div>}
+            </div>
+          )}
+
+          {selectedClan && selectedSurname && (
+            <div className="card">
+              <strong>Details</strong>
+              <div className="meta">
+                <div className="meta-item">
+                  <strong>Clan Name</strong>
+                  <div>{selectedClan["Clan Name"]}</div>
+                </div>
+                <div className="meta-item">
+                  <strong>Lineage</strong>
+                  <div>{selectedClan["Lineage"]}</div>
+                </div>
+                <div className="meta-item">
+                  <strong>Gotra</strong>
+                  <div>{selectedClan["Gotra"]}</div>
+                </div>
+                <div className="meta-item">
+                  <strong>Clan Deity</strong>
+                  <div>{selectedClan["Clan Deity"]}</div>
+                </div>
+                <div className="meta-item">
+                  <strong>Clan Goddess</strong>
+                  <div>{selectedClan["Clan Goddess"]}</div>
+                </div>
+                <div className="meta-item">
+                  <strong>Totem</strong>
+                  <div>{selectedClan["Totem"]}</div>
+                </div>
+                <div className="meta-item">
+                  <strong>Selected Surname</strong>
+                  <div>{selectedSurname}</div>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+  </script>
+</body>
+</html>
