@@ -258,6 +258,7 @@
       const [clanQuery, setClanQuery] = useState("");
       const [selectedClan, setSelectedClan] = useState(null);
       const [selectedSurname, setSelectedSurname] = useState("");
+      const [surnameQuery, setSurnameQuery] = useState("");
 
       const clanMatches = useMemo(() => {
         const q = clanQuery.trim().toLowerCase();
@@ -271,9 +272,21 @@
 
       const surnames = useSorted(selectedClan?.Surnames || []);
 
+      const surnameMatches = useMemo(() => {
+        if (!selectedClan) return [];
+        const q = surnameQuery.trim().toLowerCase();
+        if (!q) return surnames;
+        return surnames.filter((name) => {
+          const native = name.toLowerCase();
+          const latin = transliterate(name);
+          return native.startsWith(q) || latin.startsWith(q);
+        });
+      }, [selectedClan, surnameQuery, surnames]);
+
       const handleClanSelect = (clan) => {
         setSelectedClan(clan);
         setSelectedSurname("");
+        setSurnameQuery("");
       };
 
       const handleSurnameSelect = (surname) => setSelectedSurname(surname);
@@ -316,8 +329,16 @@
           {selectedClan && (
             <div className="card">
               <strong>Surnames in {selectedClan["Clan Name"]}</strong>
+              <div className="input-row" style={{ marginTop: 10 }}>
+                <input
+                  type="text"
+                  placeholder="Search surnames in this clan (English or Marathi)"
+                  value={surnameQuery}
+                  onChange={(e) => setSurnameQuery(e.target.value)}
+                />
+              </div>
               <div className="surnames">
-                {surnames.map((name) => (
+                {surnameMatches.map((name) => (
                   <div
                     key={name}
                     className={`chip ${selectedSurname === name ? "is-active" : ""}`}
@@ -328,8 +349,11 @@
                   </div>
                 ))}
               </div>
+              {surnameMatches.length === 0 && <div className="empty">No surnames match that prefix in this clan.</div>}
               {surnames.length === 0 && <div className="empty">No surnames listed for this clan.</div>}
-              {!selectedSurname && <div className="empty">Pick a surname to see clan details.</div>}
+              {!selectedSurname && surnameMatches.length > 0 && (
+                <div className="empty">Pick a surname to see clan details.</div>
+              )}
             </div>
           )}
 
