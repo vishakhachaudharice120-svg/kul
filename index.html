@@ -161,8 +161,53 @@
 
     .empty { color: var(--muted); margin-top: 8px; }
 
+    .tabs {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .tab {
+      border: 1px solid var(--border);
+      background: #f8fafc;
+      color: var(--text);
+      border-radius: 10px;
+      padding: 10px 14px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .tab.is-active {
+      border-color: var(--accent);
+      background: #dbeafe;
+      color: #0b3aa8;
+    }
+
+    .actions {
+      display: flex;
+      justify-content: flex-end;
+      margin-top: 10px;
+    }
+
+    .btn {
+      border: 1px solid var(--border);
+      background: #fff;
+      color: var(--text);
+      border-radius: 10px;
+      padding: 8px 12px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .btn:hover {
+      border-color: var(--accent);
+      background: #edf2ff;
+    }
+
     @media (max-width: 640px) {
       .input-row { flex-direction: column; align-items: stretch; }
+      .actions { justify-content: stretch; }
+      .btn { width: 100%; }
     }
   </style>
 </head>
@@ -174,64 +219,7 @@
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
   <script type="text/babel">
-    const { useMemo, useState } = React;
-
-    // Embed data.json so it works even when opened directly from the filesystem.
-    const embeddedData = [
-      {
-        "Serial Number": "१.",
-        "Clan Name": "अहिरराव",
-        "Lineage": "सूर्य",
-        "Gotra": "भारद्वाज",
-        "Clan Deity": "जेजुरीचा खंडोबा",
-        "Clan Goddess": "श्री तुळजाभवानी माता, तुळजापूर",
-        "Totem": "पंचपल्लव",
-        "Surnames": [
-          "अंकटक", "अकराळ", "अक्रील", "अमीर", "आमले", "आरज", "आटोळे", "अकांते", "अडाऊ", "अवघड",
-          "अरमाले", "आखर", "आखरे", "आदन", "इंधाते", "इरवे", "एकवे", "एदे", "एखंडे", "ऐराव",
-          "कथले", "करनाळे", "गंगाळे", "गुबरे", "घोमे", "घोडचढे", "घोकेल", "चन्हाटे", "चरणे",
-          "चेरणे", "जगजेठे", "जगडंबरे", "जगडांबरे", "जगभांडे", "जंगले", "जुनघरे", "जुनडे",
-          "जुव्यारे", "झाडोकार", "टाले", "टोले", "डवरे", "डबरे", "डुतुरे", "डोमणे", "ढाकणे",
-          "दाते", "पडवे", "पडपठे", "पडोळे", "पत्रासे", "बळी", "बळिये", "भिलकर", "भुसगाले",
-          "मुलमुले", "शिरे", "शिनगारे", "हाईपकर", "प्रोकतट", "प्रतिहार", "रसाल", "देरे",
-          "शैलधार", "इसरडगे", "ढोले", "वाडगरे"
-        ]
-      },
-      {
-        "Serial Number": "२.",
-        "Clan Name": "आंग्र",
-        "Lineage": "चंद्र",
-        "Gotra": "गार्ग्य",
-        "Clan Deity": "जेजुरीचा खंडोबा",
-        "Clan Goddess": "श्री तुळजाभवानी माता, तुळजापूर",
-        "Totem": "पंचपल्लव",
-        "Surnames": [
-          "अखत्यार", "अखिल", "अमनकार", "अवकाळी", "आतंकड", "आटकर", "आरसुड", "आसूड", "आखाड",
-          "अंधारे", "आंधक", "इरखडे", "इसनकार", "इटकरे", "इथाळे", "कंकराळे", "करांडे", "करानळे",
-          "कडाळे", "गडगर्व", "गंधर्व", "घोडतले", "चंचल", "चटपटे", "चाबुकस्वार", "चटप", "जंजाळ",
-          "जवजाळ", "जंजीरे", "जटाधारी", "जघने", "जढे", "जंघाळे", "जटाभारे", "टिपरे", "लढे",
-          "तुषार", "त्रिदोषी", "बटाणे", "सबकाळ", "सवकाळे", "सवाई", "सदार", "सरदार", "तुमाने"
-        ]
-      },
-      {
-        "Serial Number": "३.",
-        "Clan Name": "आंगण",
-        "Lineage": "चंद्र",
-        "Gotra": "दुर्वास",
-        "Clan Deity": "जेजुरीचा खंडोबा",
-        "Clan Goddess": "श्री तुळजाभवानी माता, तुळजापूर",
-        "Totem": "सोने, हलद, केतकी, कळंब",
-        "Surnames": [
-          "अंगण", "आंगणे", "अळसपुरे", "अबोले", "अडशुळ", "अस्वले", "आक्ते", "आगरकार", "अंगराखे",
-          "उगल", "उधडे", "उत्तम", "उत्पादक", "उरनाळे", "उपरे", "उरणे", "उठाळ", "उधवे",
-          "कनोझ", "कराळे", "कलानं", "किनंगे", "गऊरखेड़े", "गांधी", "गुलाब", "घोलप", "चट्टे",
-          "चाघे", "छत्तीस", "छाकटे", "छिचोरे", "छोटे", "जघने", "जंघाळे", "जढे", "जंघे",
-          "जगदाळे", "जनचोरे", "जडनावळे", "तहानें", "तळवट", "तळघाटे", "पावलें", "बुजबुजे",
-          "बुध", "बुधे", "मेहकरें", "रणधीर", "रणजीत", "लहाने", "वळ्हे", "शिंगे", "सावरकार",
-          "सालवे", "हिरवे"
-        ]
-      }
-    ];
+    const { useMemo, useState, useEffect } = React;
 
     const charMap = {
       "अ": "a", "आ": "aa", "इ": "i", "ई": "ee", "उ": "u", "ऊ": "oo",
@@ -243,8 +231,9 @@
       "प": "p", "फ": "ph", "ब": "b", "भ": "bh", "म": "m",
       "य": "y", "र": "r", "ल": "l", "व": "v",
       "श": "sh", "ष": "sh", "स": "s", "ह": "h",
-      "ळ": "l", "क्ष": "ksh", "ज्ञ": "gy", "ज़": "z", "फ़": "f", "क़": "q"
+      "ळ": "l", "क्ष": "ksh", "ज्ञ": "gy", "ज़": "z", "फ़": "f", "क़": "q"
     };
+
 
     const transliterate = (text = "") =>
       Array.from(text)
@@ -255,10 +244,22 @@
     const useSorted = (arr) => useMemo(() => [...arr].sort((a, b) => a.localeCompare(b)), [arr]);
 
     function App() {
+      const [embeddedData, setEmbeddedData] = useState([]);
+      const [activeTab, setActiveTab] = useState("clan");
       const [clanQuery, setClanQuery] = useState("");
       const [selectedClan, setSelectedClan] = useState(null);
       const [selectedSurname, setSelectedSurname] = useState("");
       const [surnameQuery, setSurnameQuery] = useState("");
+      const [globalSurnameQuery, setGlobalSurnameQuery] = useState("");
+      const [selectedGlobalSurname, setSelectedGlobalSurname] = useState("");
+
+      // Fetch data from data.json on component mount
+      useEffect(() => {
+        fetch("data.json")
+          .then((response) => response.json())
+          .then((data) => setEmbeddedData(data))
+          .catch((error) => console.error("Error loading data:", error));
+      }, []);
 
       const clanMatches = useMemo(() => {
         const q = clanQuery.trim().toLowerCase();
@@ -268,7 +269,7 @@
           const latin = transliterate(item["Clan Name"]);
           return native.startsWith(q) || latin.startsWith(q);
         });
-      }, [clanQuery]);
+      }, [clanQuery, embeddedData]);
 
       const surnames = useSorted(selectedClan?.Surnames || []);
 
@@ -283,6 +284,29 @@
         });
       }, [selectedClan, surnameQuery, surnames]);
 
+      const globalSurnameSuggestions = useMemo(() => {
+        const q = globalSurnameQuery.trim().toLowerCase();
+        if (!q) return [];
+        const unique = new Set();
+        embeddedData.forEach((clan) => {
+          (clan.Surnames || []).forEach((name) => {
+            const native = name.toLowerCase();
+            const latin = transliterate(name);
+            if (native.startsWith(q) || latin.startsWith(q)) {
+              unique.add(name);
+            }
+          });
+        });
+        return Array.from(unique).sort((a, b) => a.localeCompare(b));
+      }, [globalSurnameQuery, embeddedData]);
+
+      const globalSurnameMatches = useMemo(() => {
+        if (!selectedGlobalSurname) return [];
+        return embeddedData.filter((clan) =>
+          (clan.Surnames || []).includes(selectedGlobalSurname)
+        );
+      }, [selectedGlobalSurname, embeddedData]);
+
       const handleClanSelect = (clan) => {
         setSelectedClan(clan);
         setSelectedSurname("");
@@ -291,6 +315,18 @@
 
       const handleSurnameSelect = (surname) => setSelectedSurname(surname);
 
+      const clearClanFlow = () => {
+        setClanQuery("");
+        setSelectedClan(null);
+        setSelectedSurname("");
+        setSurnameQuery("");
+      };
+
+      const clearSurnameFlow = () => {
+        setGlobalSurnameQuery("");
+        setSelectedGlobalSurname("");
+      };
+
       return (
         <div className="shell">
           <header>
@@ -298,6 +334,26 @@
             <p className="lead">Type the first letter in English or Marathi; pick a clan, then explore surnames and full details.</p>
           </header>
 
+          <div className="card">
+            <div className="tabs">
+              <button
+                type="button"
+                className={`tab ${activeTab === "clan" ? "is-active" : ""}`}
+                onClick={() => setActiveTab("clan")}
+              >
+                Search by Clan + Surname
+              </button>
+              <button
+                type="button"
+                className={`tab ${activeTab === "surname" ? "is-active" : ""}`}
+                onClick={() => setActiveTab("surname")}
+              >
+                Search by Surname
+              </button>
+            </div>
+          </div>
+
+          {activeTab === "clan" && (
           <div className="card">
             <label htmlFor="clan-input">Search by clan</label>
             <div className="input-row">
@@ -324,9 +380,15 @@
                 ))}
               </div>
             )}
+            <div className="actions">
+              <button type="button" className="btn" onClick={clearClanFlow}>
+                Clear
+              </button>
+            </div>
           </div>
+          )}
 
-          {selectedClan && (
+          {activeTab === "clan" && selectedClan && (
             <div className="card">
               <strong>Surnames in {selectedClan["Clan Name"]}</strong>
               <div className="input-row" style={{ marginTop: 10 }}>
@@ -357,7 +419,7 @@
             </div>
           )}
 
-          {selectedClan && selectedSurname && (
+          {activeTab === "clan" && selectedClan && selectedSurname && (
             <div className="card">
               <strong>Details</strong>
               <div className="meta">
@@ -392,6 +454,91 @@
               </div>
             </div>
           )}
+
+          {activeTab === "surname" && (
+            <div className="card">
+              <label htmlFor="surname-global-input">Search by surname</label>
+              <div className="input-row">
+                <input
+                  id="surname-global-input"
+                  type="text"
+                  placeholder="Type surname in English or Marathi"
+                  value={globalSurnameQuery}
+                  onChange={(e) => {
+                    setGlobalSurnameQuery(e.target.value);
+                    setSelectedGlobalSurname("");
+                  }}
+                />
+              </div>
+              {globalSurnameQuery && (
+                <div className="suggestions">
+                  {globalSurnameSuggestions.length === 0 && (
+                    <div className="empty">No surname suggestions found.</div>
+                  )}
+                  {globalSurnameSuggestions.map((name) => (
+                    <div
+                      key={name}
+                      className={`pill ${selectedGlobalSurname === name ? "is-active" : ""}`}
+                      onClick={() => setSelectedGlobalSurname(name)}
+                      role="button"
+                    >
+                      {name}
+                    </div>
+                  ))}
+                </div>
+              )}
+              <div className="actions">
+                <button type="button" className="btn" onClick={clearSurnameFlow}>
+                  Clear
+                </button>
+              </div>
+            </div>
+          )}
+
+          {activeTab === "surname" && selectedGlobalSurname && globalSurnameMatches.length === 0 && (
+            <div className="card">
+              <div className="empty">No clan has this selected surname.</div>
+            </div>
+          )}
+
+          {activeTab === "surname" && selectedGlobalSurname && globalSurnameMatches.map((clan) => (
+            <div className="card" key={clan["Serial Number"]}>
+              <strong>{clan["Clan Name"]}</strong>
+              <div className="surnames">
+                <div className="chip is-active">{selectedGlobalSurname}</div>
+              </div>
+              <div className="meta">
+                <div className="meta-item">
+                  <strong>Clan Name</strong>
+                  <div>{clan["Clan Name"]}</div>
+                </div>
+                <div className="meta-item">
+                  <strong>Lineage</strong>
+                  <div>{clan["Lineage"]}</div>
+                </div>
+                <div className="meta-item">
+                  <strong>Gotra</strong>
+                  <div>{clan["Gotra"]}</div>
+                </div>
+                <div className="meta-item">
+                  <strong>Clan Deity</strong>
+                  <div>{clan["Clan Deity"]}</div>
+                </div>
+                <div className="meta-item">
+                  <strong>Clan Goddess</strong>
+                  <div>{clan["Clan Goddess"]}</div>
+                </div>
+                <div className="meta-item">
+                  <strong>Totem</strong>
+                  <div>{clan["Totem"]}</div>
+                </div>
+                <div className="meta-item">
+                  <strong>Selected Surname</strong>
+                  <div>{selectedGlobalSurname}</div>
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
       );
     }
